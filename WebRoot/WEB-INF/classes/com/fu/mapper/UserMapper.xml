@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.fu.mapper.UserMapper">
+	<!-- 开启本mapper的namesapce下的二级缓存 -->
+	<cache/>
+	<!-- 定义sql片段 
+		针对单表定义可重用性高
+		不要包括where
+	-->
+	<sql id="query_user_where">
+			<if test="userCustom != null">
+				<if test="userCustom.address != null and userCustom.address != ''">
+					and user.address = #{userCustom.address}
+				</if>
+				
+				<if test="userCustom.username != null and userCustom.username != ''">
+					and user.username like '%${userCustom.username}%'
+				</if>
+				<!-- WHERE id=1 OR id=10 OR id=16 -->
+				<if test="ids!=null">
+					<foreach collection="ids" item="user_id" open="AND (" close=")" separator="or">
+						<!-- 每个遍历需要拼接的串 -->
+						id=#{user_id}
+					</foreach>
+				</if>
+				
+				<!-- and id in(1,2,3) -->
+				<!-- <foreach collection="ids" item="user_id" open="and id in(" close=")" separator=",">
+					#{user_id}
+				</foreach> -->
+			</if>
+	</sql>
+		
+	<!-- 定义resultMap -->
+	<resultMap type="user" id="userResultMap">
+		<!-- id表示查询结果集中唯一标识 
+		column:查询出的列名
+		property:对应pojo 类型属性名
+		-->
+		<id column="id_" property="id"/>
+		<!-- 对普通列定义 -->
+		<result column="username_" property="username"/>
+	</resultMap>
+	
+	<!-- 使用resultMap进行输出映射  
+		如果resultMap不在同一namespace，需要在前面添加namespace
+	-->
+	<select id="findUserByIdResultMap" parameterType="int" resultMap="userResultMap">
+		select id id_, username username_ from user where id=#{value}
+	</select>
+	
+	<!-- 用户信息综合查询 -->
+	<select id="findUserList" parameterType="com.fu.po.UserQueryVo" resultType="com.fu.po.UserCustom">
+		select * from user 
+		<where>
+			<include refid="query_user_where"></include>
+		</where>
+	</select>
+	
+	<!-- 用户信息综合查询条数 -->
+	<select id="findUserCount" parameterType="com.fu.po.UserQueryVo" resultType="int">
+		select count(*) from user 
+		<where>
+			<include refid="query_user_where"></include>
+		</where>
+	</select>
+
+	<!-- 根据ID查询 -->
+	<select id="findUserById" parameterType="int" resultType="user">
+		select * from user where id=#{id}
+	</select>
+	<!-- 根据名称模糊查询 -->
+	<select id="findUserbyName" parameterType="java.lang.String" resultType="user">
+		select * from user where username like '%${value}%' 
+	</select>
+	<!-- 添加用户 -->
+	<insert id="insertUser" parameterType="com.fu.po.User">
+		
+		<!-- 将插入的主键返回，返回到user对象中 -->
+		<selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
+			select last_insert_id()
+		</selectKey>
+		insert into user(username,birthday,sex,address) value(#{username},#{birthday},#{sex},#{address})
+	</insert>
+	<!-- 删除用户 -->
+	<delete id="deleteUser" parameterType="java.lang.Integer">
+		delete from user where id=#{id}
+	</delete>
+	<!-- 修改用户 -->
+	<update id="updateUser" parameterType="com.fu.po.User">
+		update user set username=#{username}, birthday=#{birthday},sex=#{sex},address=#{address}
+		where id=#{id}
+	</update>
+	
+	
+</mapper>

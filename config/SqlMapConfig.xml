@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+PUBLIC "-//mybatils.org//DTD Config 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+	<properties resource="jdbc.properties"></properties>
+	<settings>
+		<!-- 打开延迟加载开关 -->
+		<setting name="lazyLoadingEnabled" value="true"/>
+		<!-- 积极加载改为消极加载 -->
+		<setting name="aggressiveLazyLoading" value="false"/>
+		<!-- 开启二级缓存 -->
+		<setting name="cacheEnabled" value="true"/>
+	</settings>
+	
+	<typeAliases>
+		<!-- <typeAlias type="com.fu.po.User" alias="user"/> -->
+		<!-- 批量扫描包 -->
+		<package name="com.fu.po"/>
+	</typeAliases>
+	<environments default="development">
+		<environment id="development">
+			<transactionManager type="JDBC"/>
+			<dataSource type="POOLED">
+				<property name="driver" value="${jdbc.className}"/>
+				<property name="url" value="${jdbc.url}"/>
+				<property name="username" value="${jdbc.userName}"/>
+				<property name="password" value="${jdbc.password}"/>
+			</dataSource>
+		</environment>
+	</environments>
+	
+	<!-- 加载映射文件 -->
+	<mappers>
+		<!-- <mapper resource="sqlmap/User.xml"/>
+		<mapper resource="mapper/UserMapper.xml"/> -->
+		
+		<!-- 批量加载mapper 
+		需要将借口类名和xml映射文件名称保持一致，且在同一目录中，前提是使用mapper代理方式
+		-->
+		<package name="com.fu.mapper"/>
+	</mappers>
+</configuration>
